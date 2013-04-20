@@ -11,6 +11,13 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <sys/types.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
 using namespace std;
 using namespace cv;
 
@@ -120,10 +127,23 @@ int main(int argc, const char** argv) {
         fprintf(stderr, " --(!) No captured frame -- Break!\n"); exit(-2);
        }
 
-       int c = waitKey(10);
-       if( c == 65361 ) { saveFrame(frame); }  //-- save on press of left arrow
-      } catch(cv::Exception e) {
-      }
+       char c = waitKey(10);
+
+       struct stat stFileInfo;
+       char *path = "/tmp/foo";
+       int intStat;
+
+       // Attempt to get the file attributes
+       intStat = stat(path,&stFileInfo);
+       if(intStat == 0) {
+         // We were able to get the file attributes
+         // so the file obviously exists.
+         fprintf(stderr, "File found, taking pic\n"); 
+         saveFrame(frame);
+         unlink(path);
+        }
+       } catch(cv::Exception e) {
+       }
     }
     inputSetup(0);
   } else {
