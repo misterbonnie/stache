@@ -130,6 +130,8 @@ int main(int argc, const char** argv) {
        char c = waitKey(10);
 
        struct stat stFileInfo;
+       // flag file created when big red USB button pressed
+       // it is created by https://github.com/misterbonnie/beaglebutan
        char *path = "/tmp/foo";
        int intStat;
 
