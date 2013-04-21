@@ -9,33 +9,38 @@ var config = {};
 winston.add(winston.transports.File, { filename: '/var/log/beaglestache.log' });
 
 try {
-    config = require('./config');
+    winston.info(config);
 } catch(ex) {
     winston.info("Not tweeting, no keys found: " + ex);
-    config.trigger = "/sys/class/leds/lcd3\:\:usr0/trigger";
-    config.brightness = "/sys/class/leds/lcd3\:\:usr0/brightness";
+    //config.trigger = "/sys/class/leds/lcd3\:\:usr0/trigger";
+    //config.brightness = "/sys/class/leds/lcd3\:\:usr0/brightness";
     config.twitterKey = false;
     config.message = "New #BeagleBone BeagleStache image captured! @BeagleBoardOrg";
 }
 
+winston.info("twitterKey: " + config.twitterKey);
+winston.info("twitterSecret: " + config.twitterSecret);
+winston.info("message: " + config.message);
+
+
 function LED() {
     winston.info("LED initialized");
-    var trigger = config.trigger;
-    var brightness = config.brightness;
-    fs.writeFileSync(trigger, "none");
-    fs.writeFileSync(brightness, "0");
+    //var trigger = config.trigger;
+    //var brightness = config.brightness;
+    //fs.writeFileSync(trigger, "none");
+    //fs.writeFileSync(brightness, "0");
     this.on = function() {
         winston.info("LED on");
-        fs.writeFileSync(brightness, "1");
+     //   fs.writeFileSync(brightness, "1");
     };
     this.off = function() {
         winston.info("LED off");
-        fs.writeFileSync(trigger, "none");
-        fs.writeFileSync(brightness, "0");
+        //fs.writeFileSync(trigger, "none");
+        //fs.writeFileSync(brightness, "0");
     };
     this.blink = function() {
         winston.info("LED blink");
-        fs.writeFileSync(trigger, "timer");
+        //fs.writeFileSync(trigger, "timer");
     };
 };
 var led = new LED();
@@ -45,8 +50,8 @@ function sendTweet(tweet, photoName) {
         led.blink();
         return;
     }
-    var hostname = 'upload.twitter.com';
-    var path = '/1/statuses/update_with_media.json';
+    var hostname = 'api.twitter.com';
+    var path = '/1.1/statuses/update_with_media.json';
     var port = 443;
     //var ppath = 'https://' + hostname + path;
     //var phostname = 'webproxy.ext.ti.com';
@@ -168,7 +173,7 @@ var stacheExit = function(code, signal) {
     winston.info('stache exited: ' + code + ' signal: ' + signal);
 };
 var stache = child_process.spawn('./stache', 
- ['-1','stache-mask.png','6','4','0','800','480','0.5'], 
+ ['-1','stache-mask.png','6','4','320','240','0.5'], 
  {stdio:['pipe', 'pipe', process.stderr]}
 );
 stache.stdout.setEncoding('ascii');
