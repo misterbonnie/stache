@@ -4,24 +4,28 @@ var fs = require('fs');
 var winston = require('winston');
 var OAuth = require('oauth').OAuth;
 var child_process = require('child_process');
-var config = {};
+var config = { };
 
 winston.add(winston.transports.File, { filename: '/var/log/beaglestache.log' });
 
 try {
-    winston.info(config);
+    config = require('./config');
 } catch(ex) {
     winston.info("Not tweeting, no keys found: " + ex);
     //config.trigger = "/sys/class/leds/lcd3\:\:usr0/trigger";
     //config.brightness = "/sys/class/leds/lcd3\:\:usr0/brightness";
-    config.twitterKey = false;
-    config.message = "New #BeagleBone BeagleStache image captured! @BeagleBoardOrg";
+    config.twitterKey = null;
+    config.twitterSecret = null;
+    config.accessToken = null;
+    config.tokenSecret = null;
+    config.message = null;
 }
 
 winston.info("twitterKey: " + config.twitterKey);
 winston.info("twitterSecret: " + config.twitterSecret);
+winston.info("accessToken: " + config.accessToken);
+winston.info("tokenSecret: " + config.tokenSecret);
 winston.info("message: " + config.message);
-
 
 function LED() {
     winston.info("LED initialized");
@@ -48,6 +52,7 @@ var led = new LED();
 function sendTweet(tweet, photoName) {
     if(!config.twitterKey) {
         led.blink();
+        winston.info("sendTweet: return cus no key");
         return;
     }
     var hostname = 'api.twitter.com';
@@ -60,6 +65,7 @@ function sendTweet(tweet, photoName) {
     //var proxy = 'http://' + phostname;
 
     var data = fs.readFileSync(photoName);
+    //winston.info("sendTweet: data =" + data);
 
     var oauth = new OAuth(
         'https://api.twitter.com/oauth/request_token',
@@ -67,6 +73,7 @@ function sendTweet(tweet, photoName) {
         config.twitterKey, config.twitterSecret,
         '1.0', null, 'HMAC-SHA1');
 
+    winston.info("sendTweet: oauth =" + oauth);
     var crlf = "\r\n";
     var boundary = Math.random().toString(16) + Math.random().toString(16);
 
@@ -108,6 +115,7 @@ function sendTweet(tweet, photoName) {
     var authorization = oauth.authHeader(
         'https://' + hostname + path,
         config.accessToken, config.tokenSecret, 'POST');
+    winston.info("authorization: " + authorization);
 
     var headers = {
         'Authorization': authorization,
